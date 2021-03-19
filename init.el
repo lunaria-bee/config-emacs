@@ -6,10 +6,9 @@
  '(auth-source-save-behavior nil)
  '(custom-safe-themes
    '("e5b7b99ec658a89ec23bf88765c0720f04cacb0f994832f7044967bda7f15914" "d9046dcd38624dbe0eb84605e77d165e24fdfca3a40c3b13f504728bab0bf99d" default))
- '(delete-selection-mode nil)
  '(org-agenda-files nil)
  '(package-selected-packages
-   '(company-irony-c-headers company-irony irony use-package company tide csharp-mode exec-path-from-shell bash-completion slime rust-mode markdown-mode kivy-mode)))
+   '(lsp-java lsp-ui yasnippet-snippets use-package flycheck dap-mode company)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -30,10 +29,96 @@
   (setq shell-file-name "bash")
   (setq shell-command-switch "-ic"))
 
+;; Packages
+(require 'package)
+(add-to-list 'package-archives
+             '("melpa" . "https://melpa.org/packages/"))
+(package-initialize)
+
+;; fetch list of available packages
+(unless package-archive-contents (package-refresh-contents))
+
+;; install needed packages
+(defvar luna/packages '(kivy-mode
+                        rust-mode
+                        slime
+                        use-package))
+(dolist (package luna/packages)
+  (unless (package-installed-p package) (package-install package)))
+
+(use-package rust-mode)
+
+(use-package slime)
+
+(use-package kivy-mode)
+
+(use-package markdown-mode)
+
+(use-package company :ensure t)
+
+(use-package yasnippet :config (yas-global-mode))
+
+(use-package yasnippet-snippets :ensure t)
+
+(use-package flycheck :ensure t :init (global-flycheck-mode))
+
+(use-package dap-mode
+  :ensure t
+  :after (lsp-mode dap-java)
+  :functions dap-hydra/nil
+  :config
+  (require 'dap-java)
+  :bind (:map lsp-mode-map
+              ("<f5>" . dap-debug)
+              ("M-<f5>" . dap-hydra))
+  :hook ((dap-mode . dap-ui-mode)
+         (dap-session-created . (lambda (&_rest) (dap-hydra)))
+         (dap-terminated . (lambda (&_rest) (dap-hyrda/nil)))))
+
+(use-package dap-java :ensure nil)
+
+(use-package treemacs
+  :ensure t
+  :commands (treemacs))
+
+(use-package lsp-treemacs
+  :ensure t
+  :after (lsp-mode treemacs)
+  :commands lsp-treemacs-errors-list
+  :bind (:map lsp-mode-map
+              ("M-9" . lsp-treemacs-errors-list)))
+
+(use-package lsp-ui
+  :ensure t
+  :after (lsp-mode)
+  :bind (:map lsp-ui-mode-map
+              ([remap xref-find-definitions] . lsp-ui-peek-find-definitions)
+              ([remap xref-find-references] . lsp-ui-peek-find-references))
+  :init (setq lsp-ui-doc-delay 1.5
+              lsp-ui-doc-position 'bottom
+              lsp-ui-doc-max-width 100))
+
+(use-package lsp-mode
+  :ensure t
+  :hook ((lsp-mode . lsp-enable-which-key-integration)
+         (java-mode . #'lsp-deferred))
+  :init (setq lsp-keymap-prefix "C-c l"
+              lsp-enable-file-watchers nil
+              read-process-output-max (expt 2 20)
+              lsp-completion-provider :capf
+              lsp-idle-delay 0.500)
+  :config (progn (setq lsp-intelephense-multi-root nil)
+                 (with-eval-after-load 'lsp-intelephense
+                   (setf (lsp--client-multi-root (gethash 'iph lsp-clients)) nil))
+                 (define-key lsp-mode-map (kbd "C-c l") lsp-command-map)))
+
+(use-package lsp-java
+  :ensure t
+  :config (add-hook 'java-mode-hook 'lsp))
+
 ;; Load ;;
 (add-to-list 'load-path (expand-file-name "~/.emacs.d/external"))
 
-(require 'package)
 (require 'dired-x)
 (require 'dired-mtp)
 
@@ -56,20 +141,8 @@
 (load "my-python.el")
 (load "my-shell.el")
 (load "my-slime.el")
-(load "my-tide.el")
+;; (load "my-tide.el")
 (load "my-minor-modes.el")
-
-;; Packages and Repositories ;;
-(add-to-list 'package-archives
-             '("melpa" . "https://melpa.org/packages/"))
-(package-initialize)
-
-(use-package tide
-  :ensure t
-  :after (typescript-mode company flycheck)
-  :hook ((typescript-mode . tide-setup)
-         (typescript-mode . tide-hl-identifier-mode)
-         (before-save  . tide-format-before-save)))
 
 ;; async-shell-command ;;
 (add-to-list 'display-buffer-alist (cons "\\*Async Shell Command\\*.*" (cons #'display-buffer-no-window nil)))
