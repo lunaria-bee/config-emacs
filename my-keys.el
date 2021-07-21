@@ -37,7 +37,7 @@
 (define-key my-keys-minor-mode-map (kbd "C-f") 'isearch-forward)           ; previously forward-char (>C-d)
 
 ;; Links ;;
-(define-key my-keys-minor-mode-map (kbd "C-c l") 'org-store-link)          ; previously NIL
+;; (define-key my-keys-minor-mode-map (kbd "C-c l") 'org-store-link)          ; previously NIL
 
 ;; Transparency ;;
 (define-key my-keys-minor-mode-map (kbd "C-x t")                           ; previously NIL
