@@ -46,21 +46,9 @@
 (dolist (package luna/packages)
   (unless (package-installed-p package) (package-install package)))
 
-(use-package rust-mode)
-
-(use-package slime)
-
-(use-package kivy-mode)
-
-(use-package markdown-mode)
-
 (use-package company :ensure t)
 
-(use-package yasnippet :config (yas-global-mode))
-
-(use-package yasnippet-snippets :ensure t)
-
-(use-package flycheck :ensure t :init (global-flycheck-mode))
+(use-package dap-java :ensure nil)
 
 (use-package dap-mode
   :ensure t
@@ -75,28 +63,9 @@
          (dap-session-created . (lambda (&_rest) (dap-hydra)))
          (dap-terminated . (lambda (&_rest) (dap-hyrda/nil)))))
 
-(use-package dap-java :ensure nil)
+(use-package flycheck :ensure t :init (global-flycheck-mode))
 
-(use-package treemacs
-  :ensure t
-  :commands (treemacs))
-
-(use-package lsp-treemacs
-  :ensure t
-  :after (lsp-mode treemacs)
-  :commands lsp-treemacs-errors-list
-  :bind (:map lsp-mode-map
-              ("M-9" . lsp-treemacs-errors-list)))
-
-(use-package lsp-ui
-  :ensure t
-  :after (lsp-mode)
-  :bind (:map lsp-ui-mode-map
-              ([remap xref-find-definitions] . lsp-ui-peek-find-definitions)
-              ([remap xref-find-references] . lsp-ui-peek-find-references))
-  :init (setq lsp-ui-doc-delay 1.5
-              lsp-ui-doc-position 'bottom
-              lsp-ui-doc-max-width 100))
+(use-package kivy-mode)
 
 (use-package lsp-mode
   :ensure t
@@ -116,11 +85,51 @@
   :ensure t
   :config (add-hook 'java-mode-hook 'lsp))
 
+(use-package lsp-treemacs
+  :ensure t
+  :after (lsp-mode treemacs)
+  :commands lsp-treemacs-errors-list
+  :bind (:map lsp-mode-map
+              ("M-9" . lsp-treemacs-errors-list)))
+
+(use-package lsp-ui
+  :ensure t
+  :after (lsp-mode)
+  :bind (:map lsp-ui-mode-map
+              ([remap xref-find-definitions] . lsp-ui-peek-find-definitions)
+              ([remap xref-find-references] . lsp-ui-peek-find-references))
+  :init (setq lsp-ui-doc-delay 1.5
+              lsp-ui-doc-position 'bottom
+              lsp-ui-doc-max-width 100))
+
+(use-package markdown-mode)
+
+(use-package projectile
+  :ensure t
+  :init (projectile-mode +1)
+  :config (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map))
+
+(use-package rust-mode)
+
+(use-package slime)
+
+(use-package treemacs
+  :ensure t
+  :commands (treemacs))
+
+(use-package which-key
+  :ensure t
+  :init (progn (which-key-setup-minibuffer)
+               (which-key-mode)))
+
+(use-package yasnippet :config (yas-global-mode))
+
+(use-package yasnippet-snippets :ensure t)
+
 ;; Load ;;
 (add-to-list 'load-path (expand-file-name "~/.emacs.d/external"))
 
 (require 'dired-x)
-(require 'dired-mtp)
 
 (if (file-exists-p "renpy-mode/renpy.el")
     (load "renpy-mode/renpy.el"))
